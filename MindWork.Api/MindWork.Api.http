@@ -1,0 +1,127 @@
+@host = https://localhost:5001
+@version = 1
+
+### Health Check
+GET {{host}}/health
+
+###
+
+### Registro de novo usuário (colaborador)
+POST {{host}}/api/v{{version}}/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "João Colaborador",
+  "email": "joao.colaborador@empresa.com",
+  "password": "SenhaForte@123",
+  "role": "Collaborator"
+}
+
+###
+
+### Registro de novo usuário (gestor)
+POST {{host}}/api/v{{version}}/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Maria Gestora",
+  "email": "maria.gestora@empresa.com",
+  "password": "SenhaForte@123",
+  "role": "Manager"
+}
+
+###
+
+### Login (colaborador) - pega o token e substitui abaixo
+POST {{host}}/api/v{{version}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao.colaborador@empresa.com",
+  "password": "SenhaForte@123"
+}
+
+###
+
+### Login (gestor) - pega o token e substitui abaixo
+POST {{host}}/api/v{{version}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "maria.gestora@empresa.com",
+  "password": "SenhaForte@123"
+}
+
+###
+
+# Cole aqui o token JWT do colaborador
+@collabToken = REPLACE_WITH_COLLABORATOR_TOKEN
+
+# Cole aqui o token JWT do gestor
+@managerToken = REPLACE_WITH_MANAGER_TOKEN
+
+###
+
+### Dados do usuário logado (perfil) - colaborador
+GET {{host}}/api/v{{version}}/users/me
+Authorization: Bearer {{collabToken}}
+
+###
+
+### Criar autoavaliação (colaborador)
+POST {{host}}/api/v{{version}}/selfassessments
+Authorization: Bearer {{collabToken}}
+Content-Type: application/json
+
+{
+  "mood": 4,
+  "stress": 3,
+  "workload": 4,
+  "notes": "Semana corrida, mas controlada."
+}
+
+###
+
+### Listar minhas autoavaliações (paginação + HATEOAS)
+GET {{host}}/api/v{{version}}/selfassessments/my?pageNumber=1&pageSize=5
+Authorization: Bearer {{collabToken}}
+
+###
+
+### Recomendações de IA para o colaborador logado
+GET {{host}}/api/v{{version}}/ai/recommendations/me
+Authorization: Bearer {{collabToken}}
+
+###
+
+### Criar evento de bem-estar (IoT / Mobile)
+POST {{host}}/api/v{{version}}/wellnessevents
+Authorization: Bearer {{collabToken}}
+Content-Type: application/json
+
+{
+  "userId": null,
+  "eventType": "break",
+  "occurredAt": null,
+  "source": "mobile_app",
+  "value": 15,
+  "metadataJson": "{ \"description\": \"Pausa de 15 minutos\" }"
+}
+
+###
+
+### Listar eventos de bem-estar (gestor) com paginação + filtros
+GET {{host}}/api/v{{version}}/wellnessevents?pageNumber=1&pageSize=10&eventType=break
+Authorization: Bearer {{managerToken}}
+
+###
+
+### Dashboard anônimo para gestor (últimos 30 dias)
+GET {{host}}/api/v{{version}}/dashboard/summary?days=30
+Authorization: Bearer {{managerToken}}
+
+###
+
+### Relatório mensal de IA (gestor)
+GET {{host}}/api/v{{version}}/ai/monthly-report?year=2025&month=3
+Authorization: Bearer {{managerToken}}
